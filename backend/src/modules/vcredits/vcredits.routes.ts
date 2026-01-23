@@ -101,6 +101,15 @@ router.get('/demo/ids', async (req, res, next) => {
   }
 });
 
+router.get('/seed', async (req, res, next) => {
+  try {
+    const result = await service.seedDemo();
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 // --- New Endpoints for Full Dashboard ---
 
 // List Issuers (Brands)

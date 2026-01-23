@@ -413,4 +413,73 @@ export class VCreditService {
       walletId: wallet?.id || ''
     };
   }
+
+  async seedDemo() {
+    console.log('🚀 Starting Value OS Demo Flow (API Triggered)...');
+
+    // 1. Cleanup
+    await prisma.ledgerEntry.deleteMany();
+    await prisma.transaction.deleteMany();
+    await prisma.balance.deleteMany();
+    await prisma.liquidityPool.deleteMany();
+    await prisma.vCreditDefinition.deleteMany();
+    await prisma.merchant.deleteMany();
+    await prisma.wallet.deleteMany();
+    await prisma.issuer.deleteMany();
+    await prisma.user.deleteMany();
+
+    // 2. Create Issuer
+    const issuer = await prisma.issuer.create({
+      data: { name: 'SkyHigh Airlines', slug: 'skyhigh', apiKey: 'sk_test_123' }
+    });
+
+    // 3. Create User & Wallet
+    const user = await prisma.user.create({
+      data: { email: 'demo@valueos.com', passwordHash: 'hashed_secret', fullName: 'Demo User' }
+    });
+    const wallet = await prisma.wallet.create({ data: { userId: user.id } });
+
+    // 4. Create Credit Definition
+    const miles = await this.createDefinition({
+      issuerId: issuer.id, name: 'Sky Miles', symbol: 'SKY', type: 'AIRLINE_MILE'
+    });
+
+    // 4.1. Setup Liquidity Pool
+    await prisma.liquidityPool.create({
+      data: { creditDefId: miles.id, balance: 10000, currency: 'USD' }
+    });
+
+    // --- NEW ASSETS ---
+    const bonvoy = await this.createDefinition({ issuerId: issuer.id, name: 'Marriott Bonvoy', symbol: 'MBV', type: 'LOYALTY_POINT' });
+    const amex = await this.createDefinition({ issuerId: issuer.id, name: 'Amex Rewards', symbol: 'MR', type: 'LOYALTY_POINT' });
+    const steam = await this.createDefinition({ issuerId: issuer.id, name: 'Steam Credit', symbol: 'STM', type: 'GIFT_CARD' });
+
+    // Fund pools
+    await prisma.liquidityPool.create({ data: { creditDefId: bonvoy.id, balance: 50000, currency: 'USD' } });
+    await prisma.liquidityPool.create({ data: { creditDefId: amex.id, balance: 100000, currency: 'USD' } });
+    await prisma.liquidityPool.create({ data: { creditDefId: steam.id, balance: 5000, currency: 'USD' } });
+
+    // 5. MINT Assets
+    await this.mint({ issuerId: issuer.id, targetWalletId: wallet.id, creditDefId: miles.id, amount: 12500, reason: 'Flight Refund' });
+    await this.mint({ issuerId: issuer.id, targetWalletId: wallet.id, creditDefId: bonvoy.id, amount: 45000, reason: 'Hotel Stay' });
+    await this.mint({ issuerId: issuer.id, targetWalletId: wallet.id, creditDefId: amex.id, amount: 8200, reason: 'Statement Credit' });
+    await this.mint({ issuerId: issuer.id, targetWalletId: wallet.id, creditDefId: steam.id, amount: 50, reason: 'Gift Card' });
+
+    // CONFIG: Create Merchant with Discount
+    const cafe = await prisma.merchant.create({
+      data: { name: "Value Cafe", category: "Dining", discountRate: 0.10 }
+    });
+
+    // 6. REDEEM 250 Miles
+    await this.redeem({
+      issuerId: issuer.id,
+      walletId: wallet.id,
+      creditDefId: miles.id,
+      amount: 250,
+      merchantId: cafe.id,
+      reason: 'Morning Coffee'
+    });
+
+    return { success: true, message: 'Demo Environment Seeded' };
+  }
 }
