@@ -6,7 +6,7 @@
     "scripts": {
         "start": "node dist/main.js",
         "dev": "ts-node src/main.ts",
-        "build": "tsc",
+        "build": "tsc && echo 'Build complete. Contents of dist:' && ls -R dist || echo 'dist not found'",
         "test": "echo \"Error: no test specified\" && exit 1",
         "demo": "ts-node scripts/demo_flow.ts",
         "postinstall": "prisma generate"
