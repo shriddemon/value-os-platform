@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: valueos
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: valueos_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    image: node:24-alpine
+    working_dir: /app/backend
+    volumes:
+      - ./:/app
+    environment:
+      DATABASE_URL: postgresql://valueos:password123@db:5432/valueos_db
+    command: sh -c "npm install && npx prisma db push && npm run dev"
+    depends_on:
+      - db
+
+  # Optional: Frontend container later
+  # frontend:
+  #   image: node:24-alpine
+  #   working_dir: /app/frontend
+  #   volumes:
+  #     - ./:/app
+  #   command: sh -c "npm install && npm run dev -- --host"
+  #   ports:
+  #     - "5173:5173"
+
+volumes:
+  pgdata:
