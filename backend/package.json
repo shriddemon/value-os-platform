@@ -8,7 +8,8 @@
         "dev": "ts-node src/main.ts",
         "build": "tsc",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "demo": "ts-node scripts/demo_flow.ts"
+        "demo": "ts-node scripts/demo_flow.ts",
+        "postinstall": "prisma generate"
     },
     "keywords": [],
     "author": "",
