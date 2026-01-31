@@ -15,6 +15,10 @@ app.use((req, max, next) => {
 });
 
 // Health Check
+app.get('/', (req, res) => {
+  res.json({ status: 'online', message: 'ValueOS Core API connection established.' });
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'ValueOS-Core', timestamp: new Date() });
 });

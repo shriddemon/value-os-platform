@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ----------------------------------------------------------------------
@@ -41,6 +41,20 @@ model Issuer {
   name        String   @unique // e.g., "SkyHigh Airlines"
   slug        String   @unique
   apiKey      String   @unique // Internal API key for machine access
+  
+  // Onboarding Config
+  type            String   @default("RETAIL") // RETAIL, AIRLINE, SAAS
+  integrationMode String   @default("MIRROR") // MASTER, MIRROR
+  
+  // Technical Config
+  webhookUrl      String?
+  webhookSecret   String?
+  allowedIps      String? // Comma separated
+  
+  // Financial & Compliance
+  settlementCurrency String @default("USD")
+  taxId           String?
+  verified        Boolean @default(false)
   
   // Relations
   users       User[]

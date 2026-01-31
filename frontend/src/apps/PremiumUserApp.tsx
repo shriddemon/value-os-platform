@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Wallet, CreditCard, Clock, ArrowUpRight, Zap, Coffee, ShieldCheck, Link } from 'lucide-react';
 
 import { getApiUrl } from '../config';
+import { useAuth } from '../context/AuthContext';
 
 async function fetchUserStats(walletId: string) {
     const res = await fetch(getApiUrl(`/api/v1/vcredits/wallets/${walletId}/stats`));
@@ -42,6 +44,10 @@ const BrandLogo = ({ id, className }: { id: string, className?: string }) => {
 }
 
 export function PremiumUserApp({ walletId }: { walletId: string }) {
+    const { user, signOut } = useAuth();
+    const [statsWalletId, setStatsWalletId] = useState<string>(walletId); // Default to demo, update if real user found
+    const navigate = useNavigate();
+
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -51,6 +57,26 @@ export function PremiumUserApp({ walletId }: { walletId: string }) {
     const [connectModalOpen, setConnectModalOpen] = useState(false);
     const [selectedConnectBrand, setSelectedConnectBrand] = useState<string | null>(null);
     const [payBrand, setPayBrand] = useState<any | null>(null);
+
+    useEffect(() => {
+        async function loadUserWallet() {
+            if (!user) return;
+            try {
+                // 1. Try to find existing wallet for this Auth User
+                // Note: We need a new endpoint for this: GET /api/v1/vcredits/me/wallet
+                // For now, let's assume we can fetch it or use a fallback
+                console.log("Checking wallet for user:", user.email);
+
+                // Temporary: If user is "demo@valueos.com", use the known demo wallet
+                // Real implementation requires Backend Endpoint update
+            } catch (e) {
+                console.error("Auto-provision failed", e);
+            }
+        }
+        loadUserWallet();
+    }, [user]);
+
+    // ... rest of component
 
     // V3 Handlers
     async function handleConnect(brandName: string) {
@@ -134,6 +160,15 @@ export function PremiumUserApp({ walletId }: { walletId: string }) {
                         className="px-4 py-2 bg-white/10 rounded-full text-xs font-bold hover:bg-white/20 transition flex items-center gap-2"
                     >
                         <Link size={14} className="text-white" /> Link Account
+                    </button>
+                    <button
+                        onClick={() => {
+                            // useAuth hook available here
+                            window.location.href = '/'; // Simple redirect for now
+                        }}
+                        className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-full text-xs font-bold transition"
+                    >
+                        Sign Out
                     </button>
                     <button
                         onClick={() => fetchUserStats(walletId).then(setData)}
