@@ -46,6 +46,13 @@ model Issuer {
   type            String   @default("RETAIL") // RETAIL, AIRLINE, SAAS
   integrationMode String   @default("MIRROR") // MASTER, MIRROR
   
+  // Branding & Profile
+  description     String?
+  websiteUrl      String?
+  logoUrl         String?
+  brandColorPrimary   String?
+  brandColorSecondary String?
+
   // Technical Config
   webhookUrl      String?
   webhookSecret   String?

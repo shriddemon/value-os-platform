@@ -1,10 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export function LandingPage() {
     const navigate = useNavigate();
     const { session, loading } = useAuth();
+
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         // Prevent race condition where session is null but still tearing down
@@ -32,11 +34,31 @@ export function LandingPage() {
                         </div>
                         <span className="text-xl font-bold tracking-tight text-white">Value OS</span>
                     </div>
-                    <div className="flex gap-6">
+
+                    {/* Desktop Menu */}
+                    <div className="hidden md:flex gap-6">
                         <button onClick={() => navigate('/login?role=issuer')} className="text-sm font-medium text-slate-400 hover:text-white transition">For Issuers</button>
                         <button onClick={() => navigate('/login?role=consumer')} className="text-sm font-medium text-slate-400 hover:text-white transition">For Users</button>
                     </div>
+
+                    {/* Mobile Hamburger */}
+                    <button
+                        className="md:hidden text-slate-400 hover:text-white"
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    >
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+                        </svg>
+                    </button>
                 </div>
+
+                {/* Mobile Menu Overlay */}
+                {isMobileMenuOpen && (
+                    <div className="md:hidden absolute top-20 left-0 w-full bg-slate-900 border-b border-white/5 p-4 flex flex-col gap-4 shadow-2xl">
+                        <button onClick={() => navigate('/login?role=issuer')} className="p-3 text-left font-medium text-slate-300 hover:bg-white/5 rounded-lg">For Issuers</button>
+                        <button onClick={() => navigate('/login?role=consumer')} className="p-3 text-left font-medium text-slate-300 hover:bg-white/5 rounded-lg">For Users</button>
+                    </div>
+                )}
             </nav>
 
             {/* Hero Section */}
